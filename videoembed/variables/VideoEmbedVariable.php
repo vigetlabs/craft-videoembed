@@ -19,7 +19,7 @@ class VideoEmbedVariable
 		} else if ($this->_isShortYoutube($url)) {
 			$url_parts = parse_url($url);
 
-			return '//www.youtube.com/embed/' . $url_parts['path'];
+			return '//www.youtube.com/embed' . $url_parts['path'];
 		} else if ($this->_isVimeo($url)) {
 			$url_parts = parse_url($url);
 			$segments = explode('/', $url_parts['path']);
