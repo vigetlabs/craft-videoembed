@@ -16,6 +16,10 @@ class VideoEmbedVariable
 			parse_str($url_parts['query'], $segments);
 
 			return '//www.youtube.com/embed/' . $segments['v'];
+		} else if ($this->_isShortYoutube($url)) {
+			$url_parts = parse_url($url);
+
+			return '//www.youtube.com/embed/' . $url_parts['path'];
 		} else if ($this->_isVimeo($url)) {
 			$url_parts = parse_url($url);
 			$segments = explode('/', $url_parts['path']);
@@ -44,6 +48,16 @@ class VideoEmbedVariable
 	private function _isYoutube($url)
 	{
 		return strripos($url, 'youtube.com') !== FALSE;
+	}
+
+	/**
+	 * Is the url a youtube short url
+	 * @param string $url
+	 * @return boolean
+	 */
+	private function _isShortYoutube($url)
+	{
+		return strripos($url, 'youtu.be') !== FALSE;
 	}
 
 
