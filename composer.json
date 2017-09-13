@@ -1,0 +1,47 @@
+{
+    "name": "viget/craft-video-embed",
+    "description": "Generate an embed URL from a YouTube or Vimeo URL",
+    "type": "craft-plugin",
+    "version": "1.2.0",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "video embed"
+    ],
+    "support": {
+        "docs": "https://github.com/vigetlabs/craft-videoembed/blob/master/README.md",
+        "issues": "https://github.com/vigetlabs/craft-videoembed/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Trevor Davis",
+            "homepage": "https://www.viget.com/"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "~3.0.0-beta.23"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+          "viget\\videoembed\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Video Embed",
+        "handle": "video-embed",
+        "schemaVersion": "1.2.0",
+        "hasCpSettings": false,
+        "hasCpSection": false,
+        "changelogUrl": "https://raw.githubusercontent.com/vigetlabs/craft-videoembed/master/CHANGELOG.md",
+        "class": "viget\\videoembed\\VideoEmbed"
+    }
+}
