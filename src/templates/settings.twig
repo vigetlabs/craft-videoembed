@@ -1,0 +1,177 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * Video Embed plugin for Craft CMS 3.x
+ *
+ * Video Embed Settings.twig
+ *
+ * @author    Trevor Davis
+ * @copyright Copyright (c) 2018 Trevor Davis
+ * @link      https://www.viget.com
+ * @package   VideoEmbed
+ * @since     1.2.0
+ */
+#}
+
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("viget\\videoembed\\assetbundles\\videoembed\\VideoEmbedAsset") %}
+
+<h2>YouTube Options</h2>
+
+{{ forms.checkboxField({
+    label: 'Autoplay',
+    instructions: '(the video will automatically start to play when the player loads)',
+    id: 'ytAutoplay',
+    name: 'ytAutoplay',
+    value: 'true',
+    checked: settings['ytAutoplay']
+  })
+}}
+
+{{ forms.radioGroupField({
+    label: 'Color',
+    instructions: '(used in the progress bar to highlight the amount of the video already seen)',
+    options: [
+      {
+        label: 'Red',
+        id: 'ytColorRed',
+        name: 'ytColor',
+        value: 'red',
+        checked: settings['ytColor'] == 'red' ? true : false
+      },
+      {
+        label: 'White',
+        id: 'ytColorWhite',
+        name: 'ytColor',
+        value: 'white',
+        checked: settings['ytColor'] == 'white' ? true : false
+      }
+    ]
+  })
+}}
+
+{{ forms.checkboxField({
+    label: 'Controls',
+    instructions: '(the video player controls are displayed)',
+    id: 'ytControls',
+    name: 'ytControls',
+    value: 'true',
+    checked: settings['ytControls']
+  })
+}}
+
+{{ forms.checkboxField({
+    label: 'Enable JS API',
+    instructions: '(enables the player to be controlled via [IFrame](https://developers.google.com/youtube/iframe_api_reference) or [JavaScript](https://developers.google.com/youtube/js_api_reference) Player API calls)',
+    id: 'ytEnableJsApi',
+    name: 'ytEnableJsApi',
+    value: 'true',
+    checked: settings['ytEnableJsApi']
+  })
+}}
+
+{{ forms.checkboxField({
+    label: 'Fullscreen',
+    instructions: '(displays fullscreen button, allowing player to use that mode)',
+    id: 'ytFullscreen',
+    name: 'ytFullscreen',
+    value: 'true',
+    checked: settings['ytFullscreen']
+  })
+}}
+
+{{ forms.checkboxField({
+    label: 'Loop',
+    instructions: '(causes the player to play the video again and again)',
+    id: 'ytLoop',
+    name: 'ytLoop',
+    value: 'true',
+    checked: settings['ytLoop']
+  })
+}}
+
+{{ forms.checkboxField({
+    label: 'Related Videos',
+    instructions: '(show related videos when playback of the video ends)',
+    id: 'ytRelated',
+    name: 'ytRelated',
+    value: 'true',
+    checked: settings['ytRelated']
+  })
+}}
+
+{{ forms.checkboxField({
+    label: 'Show Info',
+    instructions: '(display information like the video title and uploader)',
+    id: 'ytShowInfo',
+    name: 'ytShowInfo',
+    value: 'true',
+    checked: settings['ytShowInfo']
+  })
+}}
+
+<h2 style="border-top: 1px solid #e0e0e0; margin-top: 40px; padding-top: 40px;">
+  Vimeo Options
+</h2>
+
+{{ forms.checkboxField({
+    label: 'Autoplay',
+    instructions: '(the initial video will automatically start to play when the player loads)',
+    id: 'vAutoplay',
+    name: 'vAutoplay',
+    value: 'true',
+    checked: settings['vAutoplay']
+  })
+}}
+
+{{ forms.checkboxField({
+    label: 'Byline',
+    instructions: '(display author byline text on the video)',
+    id: 'vByline',
+    name: 'vByline',
+    value: 'true',
+    checked: settings['vByline']
+  })
+}}
+
+
+{{ forms.colorField({
+    label: 'Color',
+    instructions: '(the accent color in hexademical; optional)',
+    id: 'vColor',
+    name: 'vColor',
+    value: settings['vColor']
+  })
+}}
+
+
+{{ forms.checkboxField({
+    label: 'Loop',
+    instructions: '(causes the player to play the video again and again)',
+    id: 'vLoop',
+    name: 'vLoop',
+    value: 'true',
+    checked: settings['vLoop']
+  })
+}}
+
+{{ forms.checkboxField({
+    label: 'Portrait',
+    instructions: '(display author portrait image on the video)',
+    id: 'vPortrait',
+    name: 'vPortrait',
+    value: 'true',
+    checked: settings['vPortrait']
+  })
+}}
+
+{{ forms.checkboxField({
+    label: 'Title',
+    instructions: '(display video title on the video)',
+    id: 'vTitle',
+    name: 'vTitle',
+    value: 'true',
+    checked: settings['vTitle']
+  })
+}}

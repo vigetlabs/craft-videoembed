@@ -29,20 +29,27 @@ class VideoEmbedVariable
      */
     public function getEmbedUrl($url)
     {
-        if ($this->_isYoutube($url)) {
-            $url_parts = parse_url($url);
-            parse_str($url_parts['query'], $segments);
+        $url_parts = parse_url($url);
 
-            return '//www.youtube.com/embed/' . $segments['v'];
-        } else if ($this->_isShortYoutube($url)) {
-            $url_parts = parse_url($url);
+        if ($this->_isYoutube($url) || $this->_isShortYoutube($url)) {
+            if ($this->_isYoutube($url)) {
+                // Normal YouTube URL
+                parse_str($url_parts['query'], $segments);
+                $id = $segments['v'];
+            } else {
+                // Short YouTube URL
+                $id = substr($url_parts['path'], 1);
+            }
+            $options = $this->_generateYouTubeOptions();
 
-            return '//www.youtube.com/embed' . $url_parts['path'];
+            return '//www.youtube.com/embed/' . $id . $options;
+
         } else if ($this->_isVimeo($url)) {
-            $url_parts = parse_url($url);
             $segments = explode('/', $url_parts['path']);
+            $id = $segments[1];
+            $options = $this->_generateVimeoOptions();
 
-            return '//player.vimeo.com/video/' . $segments[1] . '?player_id=video&api=1';
+            return '//player.vimeo.com/video/' . $id . $options;
         }
     }
 
@@ -85,5 +92,108 @@ class VideoEmbedVariable
     private function _isVimeo($url)
     {
         return strripos($url, 'vimeo.com') !== FALSE;
+    }
+
+
+    /**
+     * Generate YouTube URL parameters
+     * @return string
+     */
+    private function _generateYouTubeOptions()
+    {
+        $settings = VideoEmbed::getInstance()->getSettings();
+        $options = [];
+
+        // Autoplay
+        if ($settings->ytAutoplay === 'true') {
+            array_push($options, 'autoplay=1');
+        }
+
+        // Color
+        if ($settings->ytColor === 'white') {
+            array_push($options, 'color=white');
+        }
+
+        // Controls
+        if (!$settings->ytControls) {
+            array_push($options, 'controls=0');
+        }
+
+        // Enable JS API
+        if ($settings->ytEnableJsApi === 'true') {
+            array_push($options, 'enablejsapi=1');
+        }
+
+        // Fullscreen
+        if (!$settings->ytFullscreen) {
+            array_push($options, 'fs=0');
+        }
+
+        // Loop
+        if ($settings->ytLoop === 'true') {
+            array_push($options, 'loop=1');
+        }
+
+        // Related
+        if (!$settings->ytRelated) {
+            array_push($options, 'rel=0');
+        }
+
+        // Show Info
+        if (!$settings->ytShowInfo) {
+            array_push($options, 'showinfo=0');
+        }
+
+        if ($options) {
+            return '?' . join('&', $options);
+        } else {
+            return '';
+        }
+    }
+
+    /**
+     * Generate Vimeo URL parameters
+     * @return string
+     */
+    private function _generateVimeoOptions()
+    {
+        $settings = VideoEmbed::getInstance()->getSettings();
+        $options = ['player_id=video', 'api=1'];
+
+        // Autoplay
+        if ($settings->vAutoplay === 'true') {
+            array_push($options, 'autoplay=1');
+        }
+
+        // Byline
+        if (!$settings->vByline) {
+            array_push($options, 'byline=0');
+        }
+
+        // Color
+        if ($settings->vColor) {
+            array_push($options, 'color=' . substr($settings->vColor, 1));
+        }
+
+        // Loop
+        if ($settings->vLoop === 'true') {
+            array_push($options, 'loop=1');
+        }
+
+        // Portrait
+        if (!$settings->vPortrait) {
+            array_push($options, 'portrait=0');
+        }
+
+        // Title
+        if (!$settings->vTitle) {
+            array_push($options, 'title=0');
+        }
+
+        if ($options) {
+            return '?' . join('&', $options);
+        } else {
+            return '';
+        }
     }
 }
