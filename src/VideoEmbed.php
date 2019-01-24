@@ -11,6 +11,7 @@
 namespace viget\videoembed;
 
 use viget\videoembed\variables\VideoEmbedVariable;
+use viget\videoembed\models\Settings;
 
 use Craft;
 use craft\base\Plugin;
@@ -81,4 +82,24 @@ class VideoEmbed extends Plugin
     // Protected Methods
     // =========================================================================
 
+    /**
+     * @return \craft\base\Model|null
+     */
+    protected function createSettingsModel()
+    {
+        return new \viget\videoembed\models\Settings();
+    }
+
+    /**
+     * @return string The rendered settings HTML
+     */
+    protected function settingsHtml(): string
+    {
+        return Craft::$app->view->renderTemplate(
+            'video-embed/settings',
+            [
+                'settings' => $this->getSettings()
+            ]
+        );
+    }
 }
