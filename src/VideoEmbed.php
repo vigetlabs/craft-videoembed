@@ -10,15 +10,12 @@
 
 namespace viget\videoembed;
 
-use viget\videoembed\variables\VideoEmbedVariable;
-
 use Craft;
 use craft\base\Plugin;
-use craft\services\Plugins;
-use craft\events\PluginEvent;
 use craft\web\twig\variables\CraftVariable;
-
 use yii\base\Event;
+
+use viget\videoembed\services\VideoEmbed as VideoEmbedService;
 
 /**
  * Class VideoEmbed
@@ -55,16 +52,7 @@ class VideoEmbed extends Plugin
             function (Event $event) {
                 /** @var CraftVariable $variable */
                 $variable = $event->sender;
-                $variable->set('videoEmbed', VideoEmbedVariable::class);
-            }
-        );
-
-        Event::on(
-            Plugins::class,
-            Plugins::EVENT_AFTER_INSTALL_PLUGIN,
-            function (PluginEvent $event) {
-                if ($event->plugin === $this) {
-                }
+                $variable->set('videoEmbed', VideoEmbedService::class);
             }
         );
 
@@ -77,8 +65,4 @@ class VideoEmbed extends Plugin
             __METHOD__
         );
     }
-
-    // Protected Methods
-    // =========================================================================
-
 }
