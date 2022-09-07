@@ -1,15 +1,15 @@
-# Video Embed plugin for Craft CMS 3.x
+# Video Embed plugin for Craft CMS 4.x
 
 Generate an embed URL from a YouTube or Vimeo URL.
 
 ## Requirements
 
-This plugin requires Craft CMS 3.0.0-beta.23 or later.
+This plugin requires Craft CMS 4.0.0-beta or later.
 
 ## Installation
 
 To install the plugin, follow these instructions.
-
+****
 1. Open your terminal and go to your Craft project:
 
         cd /path/to/project

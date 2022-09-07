@@ -2,7 +2,7 @@
     "name": "viget/craft-video-embed",
     "description": "Generate an embed URL from a YouTube or Vimeo URL",
     "type": "craft-plugin",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "keywords": [
         "craft",
         "cms",
