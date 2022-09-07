@@ -1,6 +1,6 @@
 <?php
 /**
- * Video Embed plugin for Craft CMS 3.x
+ * Video Embed plugin for Craft CMS 4.x
  *
  * Generate an embed URL from a YouTube or Vimeo URL
  *

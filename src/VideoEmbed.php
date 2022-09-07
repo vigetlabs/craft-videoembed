@@ -1,11 +1,11 @@
 <?php
 /**
- * Video Embed plugin for Craft CMS 3.x
+ * Video Embed plugin for Craft CMS 4.x
  *
  * Generate an embed URL from a YouTube or Vimeo URL
  *
  * @link      https://www.viget.com/
- * @copyright Copyright (c) 2017 Trevor Davis
+ * @copyright Copyright (c) 2022 Trevor Davis
  */
 
 namespace viget\videoembed;
@@ -33,7 +33,7 @@ class VideoEmbed extends Plugin
     /**
      * @var VideoEmbed
      */
-    public static $plugin;
+    public static VideoEmbed $plugin;
 
     // Public Methods
     // =========================================================================

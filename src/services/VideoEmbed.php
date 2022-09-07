@@ -7,10 +7,10 @@ use Craft;
 class VideoEmbed
 {
     /**
-     * Take a youtube or vimeo url and return the embed url
+     * Take a YouTube or Vimeo url and return the embed url
      *
      * @param string $url
-     * @return string
+     * @return string|null
      */
     public function getEmbedUrl(string $url): ?string
     {
@@ -18,26 +18,36 @@ class VideoEmbed
             $urlParts = parse_url($url);
             $query = $urlParts['query'] ?? null;
 
-            if ($query === null) return null;
+            if ($query === null) {
+                return null;
+            }
 
             parse_str($query, $segments);
             $v = $segments['v'] ?? null;
 
-            if ($v === null) return null;
+            if ($v === null) {
+                return null;
+            }
 
             return '//www.youtube.com/embed/' . $v;
-        } else if ($this->_isShortYoutube($url)) {
+        }
+    
+        if ($this->_isShortYoutube($url)) {
             $urlParts = parse_url($url);
             $path = $urlParts['path'] ?? null;
 
             if ($path === null) return null;
 
             return '//www.youtube.com/embed' . $path;
-        } else if ($this->_isVimeo($url)) {
+        }
+    
+        if ($this->_isVimeo($url)) {
             $urlParts = parse_url($url);
             $path = $urlParts['path'] ?? null;
 
-            if ($path === null) return null;
+            if ($path === null) {
+                return null;
+            }
 
             $segments = explode('/', $path);
             $firstSegment = $segments[1] ?? null;
@@ -45,13 +55,13 @@ class VideoEmbed
             if ($firstSegment === null) return null;
             
             return '//player.vimeo.com/video/' . $firstSegment . '?player_id=video&api=1';
-        } else {
-            return null;
         }
+    
+        return null;
     }
 
     /**
-     * Determine whether the url is a youtube or vimeo url
+     * Determine whether the url is a YouTube or Vimeo url
      * @param string $url
      * @return boolean
      */
@@ -61,7 +71,7 @@ class VideoEmbed
     }
 
     /**
-     * Is the url a youtube url
+     * Is the url a YouTube url
      * @param string $url
      * @return boolean
      */
@@ -71,7 +81,7 @@ class VideoEmbed
     }
 
     /**
-     * Is the url a youtube short url
+     * Is the url a YouTube short url
      * @param string $url
      * @return boolean
      */
@@ -82,7 +92,7 @@ class VideoEmbed
 
 
     /**
-     * Is the url a vimeo url
+     * Is the url a Vimeo url
      * @param string $url
      * @return boolean
      */
