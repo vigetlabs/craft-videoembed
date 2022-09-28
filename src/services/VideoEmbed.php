@@ -3,9 +3,20 @@
 namespace viget\videoembed\services;
 
 use Craft;
+use viget\videoembed\helpers\ParsingHelper;
+use viget\videoembed\models\VideoData;
 
 class VideoEmbed
 {
+    
+    /**
+     * Takes a YouTube or Vimeo URL and returns metadata for the video
+     */
+    public function getVideoData(string $url): ?VideoData
+    {
+        return ParsingHelper::getVideoDataFromUrl($url);
+    }
+    
     /**
      * Take a YouTube or Vimeo url and return the embed url
      *
