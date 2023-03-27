@@ -3,12 +3,13 @@
 namespace viget\videoembed\services;
 
 use Craft;
+use craft\errors\DeprecationException;
 use viget\videoembed\helpers\ParsingHelper;
 use viget\videoembed\models\VideoData;
 
 class VideoEmbed
 {
-    
+
     /**
      * Takes a YouTube or Vimeo URL and returns metadata for the video
      */
@@ -22,9 +23,14 @@ class VideoEmbed
      *
      * @param string $url
      * @return string|null
+     * @throws DeprecationException
+     * @deprecated v2.0.2
+     * @see self::getVideoData()
      */
     public function getEmbedUrl(string $url): ?string
     {
+        Craft::$app->getDeprecator()->log(__METHOD__, 'use getVideoData() instead');
+        
         if ($this->_isYoutube($url)) {
             $urlParts = parse_url($url);
             $query = $urlParts['query'] ?? null;
@@ -42,7 +48,7 @@ class VideoEmbed
 
             return '//www.youtube.com/embed/' . $v;
         }
-    
+
         if ($this->_isShortYoutube($url)) {
             $urlParts = parse_url($url);
             $path = $urlParts['path'] ?? null;
@@ -51,7 +57,7 @@ class VideoEmbed
 
             return '//www.youtube.com/embed' . $path;
         }
-    
+
         if ($this->_isVimeo($url)) {
             $urlParts = parse_url($url);
             $path = $urlParts['path'] ?? null;
@@ -64,10 +70,10 @@ class VideoEmbed
             $firstSegment = $segments[1] ?? null;
 
             if ($firstSegment === null) return null;
-            
+
             return '//player.vimeo.com/video/' . $firstSegment . '?player_id=video&api=1';
         }
-    
+
         return null;
     }
 
