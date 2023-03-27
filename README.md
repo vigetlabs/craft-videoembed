@@ -22,10 +22,24 @@ To install the plugin, follow these instructions.
 
 ## Using Video Embed
 
-Pass a YouTube or Vimeo URL to the `getEmbedUrl` method and an embed URL will be returned.
+Pass a YouTube or Vimeo URL to the `getVideoData` method and a `VideoData` object is returned.
 
-```
-<iframe src="{{ craft.videoEmbed.getEmbedUrl('https://www.youtube.com/watch?v=6xWpo5Dn254') }}"></iframe>
+If the plugin is unable to parse the URL, `null` is returned.
+
+- `type` - If the video is `youtube` or `vimeo`
+- `id` - The ID of the video
+- `image` - The thumbnail of the video (only works for Youtube)
+- `embedUrl` - The URL you would use for the embed
+- `url` - The link to the embedded video
+
+**Example:**
+
+```twig
+{% set video = craft.videoEmbed.getVideoData('https://www.youtube.com/watch?v=6xWpo5Dn254') %}
+
+{% if video %}
+   <iframe src="{{ video.embedUrl }}"></iframe>
+{% endif %}
 ```
 
 **Output:**
