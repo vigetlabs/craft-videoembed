@@ -4,7 +4,7 @@ Generate an embed URL from a YouTube or Vimeo URL.
 
 ## Requirements
 
-This plugin requires Craft CMS 4.0.0-beta or later.
+This plugin requires Craft CMS 4.0.0 or later.
 
 ## Installation
 
