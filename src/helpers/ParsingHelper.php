@@ -60,15 +60,21 @@ class ParsingHelper
         
         if ($query) {
             parse_str($query, $qs);
-            return $qs['v'] ?? $qs['vi'] ?? null;
+            if ($qs['v'] || $qs['vi']) {
+                return $qs['v'] ?? $qs['vi'];
+            }
         }
-    
-        // Deals with https://youtu.be/X9tg3J5OiYU URLs
+
+        /**
+         * Patterns:
+         * - https://www.youtube.com/watch?v=--HXLM8GuxA
+         * - https://youtu.be/--HXLM8GuxA?si=pNahKJLszKr8J00u
+         */
         if ($path) {
             $explodedPath = explode('/', trim($path, '/'));
             return $explodedPath[0] ?? null;
         }
-        
+
         return null;
     }
     
