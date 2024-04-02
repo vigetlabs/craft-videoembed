@@ -43,5 +43,11 @@
             "yiisoft/yii2-composer": true,
             "craftcms/plugin-installer": true
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
+    "scripts": {
+        "phpunit": "vendor/bin/phpunit --colors=auto"
     }
 }
