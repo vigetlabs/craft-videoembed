@@ -1,10 +1,10 @@
-# Video Embed plugin for Craft CMS 4.x
+# Video Embed plugin for Craft CMS 5.x
 
 Generate an embed URL from a YouTube or Vimeo URL.
 
 ## Requirements
 
-This plugin requires Craft CMS 4.0.0 or later.
+This plugin requires Craft CMS 5.0.0 or later.
 
 ## Installation
 
