@@ -2,12 +2,13 @@
 
 namespace viget\videoembed\services;
 
+use craft\base\Component;
 use Craft;
 use craft\errors\DeprecationException;
 use viget\videoembed\helpers\ParsingHelper;
 use viget\videoembed\models\VideoData;
 
-class VideoEmbed
+class VideoEmbed extends Component
 {
 
     /**
@@ -17,7 +18,7 @@ class VideoEmbed
     {
         return ParsingHelper::getVideoDataFromUrl($url);
     }
-    
+
     /**
      * Take a YouTube or Vimeo url and return the embed url
      *
@@ -30,7 +31,7 @@ class VideoEmbed
     public function getEmbedUrl(string $url): ?string
     {
         Craft::$app->getDeprecator()->log(__METHOD__, 'use getVideoData() instead');
-        
+
         if ($this->_isYoutube($url)) {
             $urlParts = parse_url($url);
             $query = $urlParts['query'] ?? null;
@@ -106,7 +107,6 @@ class VideoEmbed
     {
         return strripos($url, 'youtu.be') !== FALSE;
     }
-
 
     /**
      * Is the url a Vimeo url
