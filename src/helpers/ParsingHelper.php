@@ -60,8 +60,12 @@ class ParsingHelper
         
         if ($query) {
             parse_str($query, $qs);
-            if ($qs['v'] || $qs['vi']) {
-                return $qs['v'] ?? $qs['vi'];
+
+            $v = $qs['v'] ?? null;
+            $vi = $qs['vi'] ?? null;
+            
+            if ($v || $vi) {
+                return $v ?? $vi;
             }
         }
 
