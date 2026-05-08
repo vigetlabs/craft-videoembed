@@ -81,6 +81,29 @@ final class ParsingHelperTest extends TestCase
         );
     }
 
+    public function testGetYouTubeCanonicalUrl(): void
+    {
+        $this->assertEquals(
+            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            ParsingHelper::getVideoDataFromUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ')->url
+        );
+
+        $this->assertEquals(
+            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            ParsingHelper::getVideoDataFromUrl('https://youtu.be/dQw4w9WgXcQ')->url
+        );
+
+        $this->assertEquals(
+            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            ParsingHelper::getVideoDataFromUrl('https://youtu.be/dQw4w9WgXcQ?si=abc123')->url
+        );
+
+        $this->assertEquals(
+            'https://www.youtube.com/watch?v=--HXLM8GuxA',
+            ParsingHelper::getVideoDataFromUrl('https://youtube.com/watch?v=--HXLM8GuxA')->url
+        );
+    }
+
     public function testGetVimeoEmbedUrl(): void
     {
         $this->assertEquals(
