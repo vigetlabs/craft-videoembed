@@ -27,7 +27,7 @@ class VideoData
             id: $youtubeId,
             image: "https://i.ytimg.com/vi/{$youtubeId}/hqdefault.jpg",
             embedUrl: "https://www.youtube.com/embed/{$youtubeId}",
-            url: "https://www.youtube.com/watch?={$youtubeId}",
+            url: "https://www.youtube.com/watch?v={$youtubeId}",
         );
     }
     
