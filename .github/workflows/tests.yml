@@ -15,5 +15,5 @@ jobs:
         with:
           php-version: '8.3'
           coverage: none
-      - uses: ramsey/composer-install@v4
+      - uses: ramsey/composer-install@4.0.0
       - run: composer phpunit
