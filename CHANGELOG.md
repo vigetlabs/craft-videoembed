@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.0.4 - 2026-05-08
+### Fixed
+- Fixed Vimeo URLs containing a hash (private/unlisted video token) not generating a valid embed URL [#23](https://github.com/vigetlabs/craft-videoembed/issues/23)
+- Fixed malformed YouTube canonical URL where the `v` query parameter key was missing (`?=ID` → `?v=ID`) [#26](https://github.com/vigetlabs/craft-videoembed/issues/26)
+
 ## 2.0.3 - 2024-04-01
 ### Added
 - Expand getYouTubeIdFromUrl to allow shortened YouTube URLs
