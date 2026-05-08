@@ -8,7 +8,7 @@ use viget\videoembed\models\VideoData;
 class ParsingHelper
 {
     const YOUTUBE_URLS = ['youtube.com', 'youtu.be'];
-    const VIMEO_URLS = ['vimeo.com'];
+    const VIMEO_URLS = ['vimeo.com', 'player.vimeo.com'];
     
     public static function getVideoDataFromUrl(string $url): ?VideoData
     {
@@ -17,7 +17,8 @@ class ParsingHelper
                 self::getYouTubeIdFromUrl($url)
             ),
             VideoType::VIMEO => VideoData::forVimeo(
-                self::getVimeoIdFromUrl($url)
+                self::getVimeoIdFromUrl($url),
+                self::getVimeoHashFromUrl($url)
             ),
             default => null,
         };
@@ -79,20 +80,59 @@ class ParsingHelper
     }
     
     /**
-     * Gets the video id from a Vimeo URL
+     * Gets the video id from a Vimeo URL.
+     * Handles both vimeo.com/{id} and player.vimeo.com/video/{id} formats.
      */
     public static function getVimeoIdFromUrl(string $url): ?string
     {
         $parts = parse_url($url);
         $path = $parts['path'] ?? null;
-        
+
         if (!$path) {
             return null;
         }
-        
+
         $segments = explode('/', trim($path, '/'));
-    
+
+        // player.vimeo.com paths are /video/{id} — skip the leading 'video' segment
+        if (($segments[0] ?? null) === 'video') {
+            return $segments[1] ?? null;
+        }
+
         return $segments[0] ?? null;
+    }
+
+    /**
+     * Gets the private hash from a Vimeo URL.
+     * Handles vimeo.com/{id}/{hash} and player.vimeo.com/video/{id}?h={hash} formats.
+     */
+    public static function getVimeoHashFromUrl(string $url): ?string
+    {
+        $parts = parse_url($url);
+
+        // player.vimeo.com uses ?h= query param
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $qs);
+            if (!empty($qs['h'])) {
+                return $qs['h'];
+            }
+        }
+
+        $path = $parts['path'] ?? null;
+
+        if (!$path) {
+            return null;
+        }
+
+        $segments = explode('/', trim($path, '/'));
+
+        // vimeo.com/{id}/{hash} — hash is the second segment
+        // skip if first segment is 'video' (player URL with no hash in path)
+        if (($segments[0] ?? null) === 'video') {
+            return null;
+        }
+
+        return $segments[1] ?? null;
     }
 
 }

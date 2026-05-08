@@ -31,18 +31,26 @@ class VideoData
         );
     }
     
-    public static function forVimeo(?string $vimeoId): ?static
+    public static function forVimeo(?string $vimeoId, ?string $vimeoHash = null): ?static
     {
         if (!$vimeoId) {
             return null;
         }
-        
+
+        $embedUrl = "https://player.vimeo.com/video/{$vimeoId}";
+        $canonicalUrl = "https://www.vimeo.com/{$vimeoId}";
+
+        if ($vimeoHash) {
+            $embedUrl .= "?h={$vimeoHash}";
+            $canonicalUrl .= "/{$vimeoHash}";
+        }
+
         return new self(
             type: VideoType::VIMEO->value,
             id: $vimeoId,
             image: null, // TODO there isn't an easy way to get this without querying an API or oEmbed endpoint
-            embedUrl: "https://player.vimeo.com/video/{$vimeoId}",
-            url: "https://www.vimeo.com/{$vimeoId}",
+            embedUrl: $embedUrl,
+            url: $canonicalUrl,
         );
     }
 }
