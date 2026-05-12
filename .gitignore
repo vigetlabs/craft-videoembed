@@ -13,6 +13,9 @@ composer.lock
 /build/*
 /yarn-error.log
 
+# WORKING NOTES
+.claude/
+
 # MISC FILES
 .cache
 *.cache

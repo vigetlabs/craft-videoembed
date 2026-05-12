@@ -31,7 +31,14 @@ class VideoEmbed extends Plugin
     // =========================================================================
 
     /**
+     * Static reference to this plugin instance.
+     *
      * @var VideoEmbed
+     * @todo v4 — remove this property. Consumers should resolve the service
+     *       via Craft::$app->getPlugins()->getPlugin('video-embed') or rely on
+     *       the `craft.videoEmbed` Twig variable. Static plugin references are
+     *       an anti-pattern in Craft 5+ and this property exists only for
+     *       backwards compatibility.
      */
     public static VideoEmbed $plugin;
 
@@ -56,13 +63,15 @@ class VideoEmbed extends Plugin
             }
         );
 
-        Craft::info(
-            Craft::t(
-                'video-embed',
-                '{name} plugin loaded',
-                ['name' => $this->name]
-            ),
-            __METHOD__
-        );
+        if (Craft::$app->getConfig()->getGeneral()->devMode) {
+            Craft::info(
+                Craft::t(
+                    'video-embed',
+                    '{name} plugin loaded',
+                    ['name' => $this->name]
+                ),
+                __METHOD__
+            );
+        }
     }
 }

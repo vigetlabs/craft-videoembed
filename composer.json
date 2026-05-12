@@ -32,7 +32,6 @@
     "extra": {
         "name": "Video Embed",
         "handle": "video-embed",
-        "schemaVersion": "3.0.0",
         "hasCpSettings": false,
         "hasCpSection": false,
         "changelogUrl": "https://raw.githubusercontent.com/vigetlabs/craft-videoembed/v3/CHANGELOG.md",
@@ -45,7 +44,7 @@
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "*"
+        "phpunit/phpunit": "^11.0"
     },
     "scripts": {
         "phpunit": "vendor/bin/phpunit --colors=auto"

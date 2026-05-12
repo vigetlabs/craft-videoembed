@@ -4,12 +4,13 @@ Generate an embed URL from a YouTube or Vimeo URL.
 
 ## Requirements
 
-This plugin requires Craft CMS 5.0.0 or later.
+- Craft CMS 5.0.0 or later
+- PHP 8.2 or later
 
 ## Installation
 
 To install the plugin, follow these instructions.
-****
+
 1. Open your terminal and go to your Craft project:
 
         cd /path/to/project
@@ -18,7 +19,7 @@ To install the plugin, follow these instructions.
 
         composer require viget/craft-video-embed
 
-3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Video Embed.
+3. In the Control Panel, go to Settings → Plugins and click the "Install" button for Video Embed.
 
 ## Using Video Embed
 
@@ -26,11 +27,11 @@ Pass a YouTube or Vimeo URL to the `getVideoData` method and a `VideoData` objec
 
 If the plugin is unable to parse the URL, `null` is returned.
 
-- `type` - If the video is `youtube` or `vimeo`
-- `id` - The ID of the video
-- `image` - The thumbnail of the video (only works for Youtube)
-- `embedUrl` - The URL you would use for the embed
-- `url` - The link to the embedded video
+- `type` - `youtube` or `vimeo`
+- `id` - The video ID
+- `image` - Thumbnail URL (YouTube only)
+- `embedUrl` - The URL to use as the iframe `src`
+- `url` - The original watch URL for the video
 
 **Example:**
 
@@ -44,8 +45,8 @@ If the plugin is unable to parse the URL, `null` is returned.
 
 **Output:**
 
-```
-<iframe src="//www.youtube.com/embed/6xWpo5Dn254"></iframe>
+```html
+<iframe src="https://www.youtube.com/embed/6xWpo5Dn254?rel=0"></iframe>
 ```
 
 ***
