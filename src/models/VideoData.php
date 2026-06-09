@@ -27,10 +27,29 @@ class VideoData
             type: VideoType::YOUTUBE->value,
             id: $youtubeId,
             image: "https://i.ytimg.com/vi/{$youtubeId}/hqdefault.jpg",
-            embedUrl: "https://www.youtube.com/embed/{$youtubeId}",
+            embedUrl: "https://www.youtube.com/embed/{$youtubeId}?rel=0",
             url: "https://www.youtube.com/watch?v={$youtubeId}",
             isVertical: $isVertical,
         );
+    }
+
+    /**
+     * Returns the embed URL with additional query params merged in — e.g.
+     * `video.embedUrlWithParams({ autoplay: 1, mute: 1 })`. Use this instead of
+     * concatenating onto `embedUrl`, which already carries a query string
+     * (YouTube `rel=0`, or a Vimeo privacy `h` hash). Caller params override
+     * existing ones of the same name; everything is joined with `&` correctly.
+     */
+    public function embedUrlWithParams(array $params = []): string
+    {
+        if (!$params) {
+            return $this->embedUrl;
+        }
+
+        [$base, $existingQuery] = array_pad(explode('?', $this->embedUrl, 2), 2, '');
+        parse_str($existingQuery, $existing);
+
+        return $base . '?' . http_build_query(array_merge($existing, $params));
     }
 
     public static function forVimeo(?string $vimeoId, ?string $vimeoHash = null): ?static

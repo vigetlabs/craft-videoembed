@@ -173,7 +173,7 @@ final class ParsingHelperTest extends TestCase
         $this->assertNotNull($video);
         $this->assertTrue($video->isVertical);
         $this->assertEquals('dQw4w9WgXcQ', $video->id);
-        $this->assertEquals('https://www.youtube.com/embed/dQw4w9WgXcQ', $video->embedUrl);
+        $this->assertEquals('https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0', $video->embedUrl);
     }
 
     public function testIsVerticalIsFalseForNonShortsYouTube(): void
@@ -200,6 +200,53 @@ final class ParsingHelperTest extends TestCase
     {
         $this->assertNull(
             ParsingHelper::getVideoDataFromUrl('https://example.com/video')
+        );
+    }
+
+    /**
+     * YouTube embed URLs include rel=0 so related-video suggestions stay on the
+     * same channel (YouTube removed full suppression in September 2018).
+     */
+    public function testGetYouTubeEmbedUrlIncludesRel0(): void
+    {
+        $this->assertEquals(
+            'https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0',
+            ParsingHelper::getVideoDataFromUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ')->embedUrl
+        );
+    }
+
+    /**
+     * embedUrlWithParams merges caller params into the existing query string
+     * (rel=0 for YouTube, the h= hash for Vimeo) without manual concatenation.
+     */
+    public function testEmbedUrlWithParams(): void
+    {
+        $video = ParsingHelper::getVideoDataFromUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+
+        $this->assertEquals(
+            'https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0',
+            $video->embedUrlWithParams(),
+            'no params returns embedUrl unchanged'
+        );
+
+        $this->assertEquals(
+            'https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&autoplay=1',
+            $video->embedUrlWithParams(['autoplay' => 1]),
+            'extra params join with &'
+        );
+
+        $this->assertEquals(
+            'https://www.youtube.com/embed/dQw4w9WgXcQ?rel=1',
+            $video->embedUrlWithParams(['rel' => 1]),
+            'caller params override existing ones'
+        );
+
+        // Vimeo: merges with the existing privacy-hash param.
+        $vimeo = ParsingHelper::getVideoDataFromUrl('https://vimeo.com/9999999999/0000000000');
+
+        $this->assertEquals(
+            'https://player.vimeo.com/video/9999999999?h=0000000000&autoplay=1',
+            $vimeo->embedUrlWithParams(['autoplay' => 1])
         );
     }
 }
