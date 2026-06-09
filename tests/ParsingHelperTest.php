@@ -88,6 +88,12 @@ final class ParsingHelperTest extends TestCase
             ParsingHelper::getVimeoIdFromUrl('https://vimeo.com/channels/staffpicks/12345'),
             'Channel URL — must return the numeric ID, not "channels"'
         );
+
+        $this->assertEquals(
+            '12345',
+            ParsingHelper::getVimeoIdFromUrl('https://vimeo.com/album/myalbum/12345'),
+            'Album URL — ID is the trailing segment'
+        );
     }
 
     public function testGetVimeoIdFromUrlGroups(): void

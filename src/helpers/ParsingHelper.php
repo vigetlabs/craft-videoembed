@@ -92,6 +92,7 @@ class ParsingHelper
      * - vimeo.com/{id}                          (id = first segment)
      * - vimeo.com/{id}/{hash}                   (id = first segment; hash may be numeric)
      * - vimeo.com/channels/{slug}/{id}          (id = last segment)
+     * - vimeo.com/album/{slug}/{id}             (id = last segment)
      * - vimeo.com/groups/{slug}/videos/{id}     (id = segment after "videos")
      * - vimeo.com/showcase/{slug}/video/{id}    (id = segment after "video")
      * - vimeo.com/video/{id}                    (id = segment after "video")
