@@ -31,6 +31,7 @@ If the plugin is unable to parse the URL, `null` is returned.
 - `image` - The thumbnail of the video (only works for Youtube)
 - `embedUrl` - The URL you would use for the embed
 - `url` - The link to the embedded video
+- `isVertical` - `true` for YouTube Shorts (vertical/portrait) videos, otherwise `false`. Detected from the `/shorts/` URL form, not the video's true orientation.
 
 **Example:**
 

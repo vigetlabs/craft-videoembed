@@ -126,4 +126,80 @@ final class ParsingHelperTest extends TestCase
             ParsingHelper::getVideoDataFromUrl('https://player.vimeo.com/video/9999999999?h=0000000000')->embedUrl
         );
     }
+
+    // =========================================================================
+    // YouTube Shorts parsing
+    // =========================================================================
+
+    public function testGetYouTubeIdFromUrlShorts(): void
+    {
+        $this->assertEquals(
+            'dQw4w9WgXcQ',
+            ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/shorts/dQw4w9WgXcQ')
+        );
+
+        $this->assertEquals(
+            'dQw4w9WgXcQ',
+            ParsingHelper::getYouTubeIdFromUrl('https://youtube.com/shorts/dQw4w9WgXcQ?feature=share')
+        );
+
+        // The /shorts/ prefix is matched case-insensitively.
+        $this->assertEquals(
+            'dQw4w9WgXcQ',
+            ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/Shorts/dQw4w9WgXcQ')
+        );
+
+        // A /shorts/ URL with no ID must return null, not the literal "shorts".
+        $this->assertNull(
+            ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/shorts')
+        );
+        $this->assertNull(
+            ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/shorts/')
+        );
+    }
+
+    // =========================================================================
+    // isVertical metadata
+    // =========================================================================
+
+    /**
+     * A YouTube Shorts URL yields a vertical VideoData while still resolving a
+     * correct ID and embed URL — the flag and parsing coexist.
+     */
+    public function testIsVerticalForShorts(): void
+    {
+        $video = ParsingHelper::getVideoDataFromUrl('https://www.youtube.com/shorts/dQw4w9WgXcQ');
+
+        $this->assertNotNull($video);
+        $this->assertTrue($video->isVertical);
+        $this->assertEquals('dQw4w9WgXcQ', $video->id);
+        $this->assertEquals('https://www.youtube.com/embed/dQw4w9WgXcQ', $video->embedUrl);
+    }
+
+    public function testIsVerticalIsFalseForNonShortsYouTube(): void
+    {
+        $this->assertFalse(
+            ParsingHelper::getVideoDataFromUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ')->isVertical,
+            'watch?v= URL is not vertical'
+        );
+
+        $this->assertFalse(
+            ParsingHelper::getVideoDataFromUrl('https://youtu.be/dQw4w9WgXcQ')->isVertical,
+            'youtu.be URL is not vertical'
+        );
+    }
+
+    public function testIsVerticalIsFalseForVimeo(): void
+    {
+        $this->assertFalse(
+            ParsingHelper::getVideoDataFromUrl('https://vimeo.com/9999999999')->isVertical
+        );
+    }
+
+    public function testGetVideoDataReturnsNullForUnknownUrl(): void
+    {
+        $this->assertNull(
+            ParsingHelper::getVideoDataFromUrl('https://example.com/video')
+        );
+    }
 }
