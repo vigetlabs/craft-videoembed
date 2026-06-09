@@ -81,6 +81,84 @@ final class ParsingHelperTest extends TestCase
         );
     }
 
+    public function testGetVimeoIdFromUrlChannels(): void
+    {
+        $this->assertEquals(
+            '12345',
+            ParsingHelper::getVimeoIdFromUrl('https://vimeo.com/channels/staffpicks/12345'),
+            'Channel URL — must return the numeric ID, not "channels"'
+        );
+    }
+
+    public function testGetVimeoIdFromUrlGroups(): void
+    {
+        $this->assertEquals(
+            '12345',
+            ParsingHelper::getVimeoIdFromUrl('https://vimeo.com/groups/shortfilms/videos/12345'),
+            'Group URL — must return the numeric ID, not "groups"'
+        );
+    }
+
+    public function testGetVimeoIdFromUrlVideoPrefix(): void
+    {
+        $this->assertEquals(
+            '12345',
+            ParsingHelper::getVimeoIdFromUrl('https://vimeo.com/video/12345')
+        );
+    }
+
+    /**
+     * Numeric slugs must not be mistaken for the video ID (issue #35). The ID
+     * is located structurally, so a numeric channel/group/showcase slug
+     * preceding the real ID is ignored.
+     */
+    public function testGetVimeoIdFromUrlNumericSlugs(): void
+    {
+        $this->assertEquals(
+            '456',
+            ParsingHelper::getVimeoIdFromUrl('https://vimeo.com/groups/123/videos/456'),
+            'Numeric group slug — ID is the segment after "videos"'
+        );
+
+        $this->assertEquals(
+            '12345',
+            ParsingHelper::getVimeoIdFromUrl('https://vimeo.com/channels/2020/12345'),
+            'Numeric channel slug — ID is the trailing segment'
+        );
+
+        $this->assertEquals(
+            '12345',
+            ParsingHelper::getVimeoIdFromUrl('https://vimeo.com/showcase/7654321/video/12345'),
+            'Numeric showcase slug — ID is the segment after "video"'
+        );
+    }
+
+    /**
+     * A numeric privacy hash in the root /{id}/{hash} form must not be returned
+     * as the ID — the ID is always the first segment here.
+     */
+    public function testGetVimeoIdFromUrlNumericHashKeepsId(): void
+    {
+        $this->assertEquals(
+            '9999999999',
+            ParsingHelper::getVimeoIdFromUrl('https://vimeo.com/9999999999/0000000000')
+        );
+    }
+
+    public function testGetVimeoIdFromUrlRejectsNonNumeric(): void
+    {
+        $this->assertNull(
+            ParsingHelper::getVimeoIdFromUrl('https://vimeo.com/channels')
+        );
+    }
+
+    public function testGetVimeoHashFromUrlChannelHasNoPathHash(): void
+    {
+        $this->assertNull(
+            ParsingHelper::getVimeoHashFromUrl('https://vimeo.com/channels/staffpicks/12345')
+        );
+    }
+
     public function testGetYouTubeCanonicalUrl(): void
     {
         $this->assertEquals(
