@@ -14,5 +14,5 @@
  * @since     1.2.0
  */
 return [
-    'Video Embed plugin loaded' => 'Video Embed plugin loaded',
+    '{name} plugin loaded' => '{name} plugin loaded',
 ];
