@@ -14,6 +14,97 @@ final class ParsingHelperTest extends TestCase
         );
     }
 
+    public function testGetVideoTypeFromUrlReturnsUnknownForMalformedInput(): void
+    {
+        $this->assertEquals(VideoType::UNKNOWN, ParsingHelper::getVideoTypeFromUrl(''));
+        $this->assertEquals(VideoType::UNKNOWN, ParsingHelper::getVideoTypeFromUrl('not a url'));
+    }
+
+    /**
+     * Non-http/https schemes must return UNKNOWN before the host is trusted.
+     */
+    public function testGetVideoTypeFromUrlRejectsNonHttpSchemes(): void
+    {
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('javascript://youtube.com/watch?v=ID')
+        );
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('ftp://youtube.com/watch?v=ID')
+        );
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('//youtube.com/watch?v=ID')
+        );
+    }
+
+    /**
+     * Exact host matching: a domain that merely contains "youtube.com" or
+     * "vimeo.com" as a substring must not be treated as that provider.
+     */
+    public function testGetVideoTypeFromUrlRejectsFakeHosts(): void
+    {
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('https://notyoutube.com/watch?v=ID')
+        );
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('https://attackervimeo.com/12345')
+        );
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('https://evil.com/?r=https://youtube.com/watch?v=ID')
+        );
+    }
+
+    /**
+     * Mobile (m.) and YouTube Music (music.) subdomains must still resolve to
+     * YouTube (issue #36).
+     */
+    public function testGetVideoTypeFromUrlAcceptsYouTubeSubdomains(): void
+    {
+        $this->assertEquals(
+            VideoType::YOUTUBE,
+            ParsingHelper::getVideoTypeFromUrl('https://m.youtube.com/watch?v=ID')
+        );
+        $this->assertEquals(
+            VideoType::YOUTUBE,
+            ParsingHelper::getVideoTypeFromUrl('https://music.youtube.com/watch?v=ID')
+        );
+    }
+
+    /**
+     * IDs containing characters outside [A-Za-z0-9_-] must return null so they
+     * are never interpolated into embed or image URLs.
+     */
+    public function testGetYouTubeIdFromUrlRejectsInjectionPayloads(): void
+    {
+        $this->assertNull(
+            ParsingHelper::getYouTubeIdFromUrl('https://youtu.be/VALID_ID" onload="alert(1)')
+        );
+        $this->assertNull(
+            ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/watch?v=<script>alert(1)</script>')
+        );
+        $this->assertNull(
+            ParsingHelper::getYouTubeIdFromUrl('https://youtu.be/VALID ID')
+        );
+        $this->assertNull(
+            ParsingHelper::getYouTubeIdFromUrl('https://youtu.be/../evil')
+        );
+    }
+
+    /**
+     * Array-valued query params (?v[]=) must not throw a TypeError (issue #34).
+     */
+    public function testGetYouTubeIdFromUrlRejectsArrayQueryParam(): void
+    {
+        $this->assertNull(
+            ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/watch?v[]=abc')
+        );
+    }
+
     public function testGetYouTubeIdFromUrl(): void
     {
         $this->assertEquals(
