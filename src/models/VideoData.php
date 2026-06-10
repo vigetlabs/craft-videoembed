@@ -12,25 +12,27 @@ class VideoData
         public ?string $image,
         public string $embedUrl,
         public string $url,
+        public bool $isVertical = false,
     )
     {
     }
-    
-    public static function forYoutube(?string $youtubeId): ?static
+
+    public static function forYoutube(?string $youtubeId, bool $isVertical = false): ?static
     {
         if (!$youtubeId) {
             return null;
         }
-        
+
         return new self(
             type: VideoType::YOUTUBE->value,
             id: $youtubeId,
             image: "https://i.ytimg.com/vi/{$youtubeId}/hqdefault.jpg",
             embedUrl: "https://www.youtube.com/embed/{$youtubeId}",
             url: "https://www.youtube.com/watch?v={$youtubeId}",
+            isVertical: $isVertical,
         );
     }
-    
+
     public static function forVimeo(?string $vimeoId, ?string $vimeoHash = null): ?static
     {
         if (!$vimeoId) {
