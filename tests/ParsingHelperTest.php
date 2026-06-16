@@ -257,7 +257,7 @@ final class ParsingHelperTest extends TestCase
         $this->assertNotNull($video);
         $this->assertTrue($video->isVertical);
         $this->assertEquals('dQw4w9WgXcQ', $video->id);
-        $this->assertEquals('https://www.youtube.com/embed/dQw4w9WgXcQ', $video->embedUrl);
+        $this->assertEquals('https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0', $video->embedUrl);
     }
 
     public function testIsVerticalIsFalseForNonShortsYouTube(): void
@@ -284,6 +284,18 @@ final class ParsingHelperTest extends TestCase
     {
         $this->assertNull(
             ParsingHelper::getVideoDataFromUrl('https://example.com/video')
+        );
+    }
+
+    /**
+     * YouTube embed URLs include rel=0 so related-video suggestions stay on the
+     * same channel (YouTube removed full suppression in September 2018).
+     */
+    public function testGetYouTubeEmbedUrlIncludesRel0(): void
+    {
+        $this->assertEquals(
+            'https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0',
+            ParsingHelper::getVideoDataFromUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ')->embedUrl
         );
     }
 }

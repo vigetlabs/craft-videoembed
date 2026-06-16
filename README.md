@@ -45,8 +45,19 @@ If the plugin is unable to parse the URL, `null` is returned.
 
 **Output:**
 
+```html
+<iframe src="https://www.youtube.com/embed/6xWpo5Dn254?rel=0"></iframe>
 ```
-<iframe src="//www.youtube.com/embed/6xWpo5Dn254"></iframe>
+
+YouTube embed URLs include `rel=0` so related-video suggestions stay on the same channel rather than promoting unrelated videos.
+
+### Customizing URL params
+
+Because `embedUrl` already carries a query string (YouTube's `rel=0`, or a Vimeo privacy `h` hash), add your own player params with Craft's built-in [`url()`](https://craftcms.com/docs/5.x/reference/twig/functions.html#url) function rather than concatenating onto `embedUrl`. `url()` preserves the existing params and merges in your own:
+
+```twig
+<iframe src="{{ url(video.embedUrl, { autoplay: 1, mute: 1 }) }}"></iframe>
+{# → https://www.youtube.com/embed/6xWpo5Dn254?rel=0&autoplay=1&mute=1 #}
 ```
 
 ***
