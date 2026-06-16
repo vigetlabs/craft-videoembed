@@ -45,9 +45,11 @@ If the plugin is unable to parse the URL, `null` is returned.
 
 **Output:**
 
+```html
+<iframe src="https://www.youtube.com/embed/6xWpo5Dn254?rel=0"></iframe>
 ```
-<iframe src="//www.youtube.com/embed/6xWpo5Dn254"></iframe>
-```
+
+YouTube embed URLs include `rel=0` so related-video suggestions stay on the same channel rather than promoting unrelated videos.
 
 ***
 

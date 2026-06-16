@@ -27,7 +27,7 @@ class VideoData
             type: VideoType::YOUTUBE->value,
             id: $youtubeId,
             image: "https://i.ytimg.com/vi/{$youtubeId}/hqdefault.jpg",
-            embedUrl: "https://www.youtube.com/embed/{$youtubeId}",
+            embedUrl: "https://www.youtube.com/embed/{$youtubeId}?rel=0",
             url: "https://www.youtube.com/watch?v={$youtubeId}",
             isVertical: $isVertical,
         );
