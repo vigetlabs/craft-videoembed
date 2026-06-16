@@ -46,9 +46,7 @@ class VideoEmbed extends Plugin
     // =========================================================================
 
     /**
-     * The plugin's schema version, used by Craft to track install/migration
-     * state. Declared on the plugin class per Craft 5 conventions rather than
-     * in composer.json's `extra` block.
+     * @inheritDoc
      */
     public string $schemaVersion = '3.0.0';
 
