@@ -118,8 +118,19 @@ class ParsingHelper
     }
     
     /**
-     * Gets the video id from a Vimeo URL.
-     * Handles both vimeo.com/{id} and player.vimeo.com/video/{id} formats.
+     * Gets the numeric video ID from a Vimeo URL.
+     *
+     * The ID's position depends on the URL form, so it is located structurally
+     * rather than by grabbing the first numeric run (a numeric slug would win —
+     * see issue #35). Handles:
+     * - vimeo.com/{id}                          (id = first segment)
+     * - vimeo.com/{id}/{hash}                   (id = first segment; hash may be numeric)
+     * - vimeo.com/channels/{slug}/{id}          (id = last segment)
+     * - vimeo.com/album/{slug}/{id}             (id = last segment)
+     * - vimeo.com/groups/{slug}/videos/{id}     (id = segment after "videos")
+     * - vimeo.com/showcase/{slug}/video/{id}    (id = segment after "video")
+     * - vimeo.com/video/{id}                    (id = segment after "video")
+     * - player.vimeo.com/video/{id}             (id = segment after "video")
      */
     public static function getVimeoIdFromUrl(string $url): ?string
     {
@@ -130,14 +141,47 @@ class ParsingHelper
             return null;
         }
 
-        $segments = explode('/', trim($path, '/'));
+        $segments = array_values(
+            array_filter(explode('/', $path), static fn($s) => $s !== '')
+        );
 
-        // player.vimeo.com paths are /video/{id} — skip the leading 'video' segment
-        if (($segments[0] ?? null) === 'video') {
-            return $segments[1] ?? null;
+        if (!$segments) {
+            return null;
         }
 
-        return $segments[0] ?? null;
+        // /video/{id} and /groups/{slug}/videos/{id} — the ID follows the last
+        // "video"/"videos" marker.
+        $markerIndex = null;
+        foreach ($segments as $i => $segment) {
+            if ($segment === 'video' || $segment === 'videos') {
+                $markerIndex = $i;
+            }
+        }
+        if ($markerIndex !== null) {
+            return self::numericOrNull($segments[$markerIndex + 1] ?? null);
+        }
+
+        // /channels/{slug}/{id}, /showcase/{slug}/{id}, /album/{slug}/{id} —
+        // the ID is the trailing segment after the named collection.
+        if (in_array($segments[0], ['channels', 'showcase', 'album'], true)) {
+            return self::numericOrNull(end($segments));
+        }
+
+        // Root form: /{id} or /{id}/{hash} — the ID is the first segment, and a
+        // trailing hash (which may itself be numeric) is not the ID.
+        return self::numericOrNull($segments[0]);
+    }
+
+    /**
+     * Returns the value only when it is a purely-numeric string (a Vimeo video
+     * ID), otherwise null.
+     */
+    private static function numericOrNull(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        return preg_match('/^\d+$/', $value) ? $value : null;
     }
 
     /**
@@ -164,9 +208,10 @@ class ParsingHelper
 
         $segments = explode('/', trim($path, '/'));
 
-        // vimeo.com/{id}/{hash} — hash is the second segment
-        // skip if first segment is 'video' (player URL with no hash in path)
-        if (($segments[0] ?? null) === 'video') {
+        // A path hash only appears as the second segment of vimeo.com/{id}/{hash}.
+        // Channel/group URLs lead with a named slug and player.vimeo.com paths
+        // lead with "video" — neither is numeric, so there is no path hash.
+        if (!preg_match('/^\d+$/', $segments[0] ?? '')) {
             return null;
         }
 
