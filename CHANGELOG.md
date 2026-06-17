@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 3.1.0 - 2026-06-16
+### Added
+- Exposed `isVertical` for YouTube Shorts [#40](https://github.com/vigetlabs/craft-videoembed/pull/40)
+
+### Changed
+- YouTube embeds now include `rel=0` so related-video suggestions stay on the source channel [#48](https://github.com/vigetlabs/craft-videoembed/pull/48)
+
+### Fixed
+- Fixed Vimeo ID parsing for channel, group, and showcase URLs [#35](https://github.com/vigetlabs/craft-videoembed/issues/35) [#41](https://github.com/vigetlabs/craft-videoembed/pull/41)
+- The "plugin loaded" log message now only fires when `devMode` is on, instead of on every production request [#38](https://github.com/vigetlabs/craft-videoembed/issues/38) [#43](https://github.com/vigetlabs/craft-videoembed/pull/43)
+
 ## 3.0.1 - 2026-05-08
 ### Fixed
 - Fixed Vimeo URLs containing a hash (private/unlisted video token) not generating a valid embed URL [#23](https://github.com/vigetlabs/craft-videoembed/issues/23)
