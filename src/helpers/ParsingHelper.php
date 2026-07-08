@@ -108,11 +108,18 @@ class ParsingHelper
          */
         if ($path) {
             $explodedPath = explode('/', trim($path, '/'));
+            $first = strtolower($explodedPath[0] ?? '');
 
-            // YouTube Shorts URLs are /shorts/{id} — the ID is the second
-            // segment. Return null (not "shorts") when the ID is absent.
-            if (strtolower($explodedPath[0] ?? '') === self::YOUTUBE_SHORTS_PREFIX) {
+            // /shorts/{id}, /embed/{id}, /live/{id} carry the ID in the SECOND
+            // segment. Return null (not the route name) when the ID is absent.
+            if (in_array($first, [self::YOUTUBE_SHORTS_PREFIX, 'embed', 'live'], true)) {
                 return self::validateYouTubeId($explodedPath[1] ?? null);
+            }
+
+            // Known non-ID routes never carry a bare video ID as the first
+            // segment (issue #50) — don't treat "watch", "playlist", etc. as IDs.
+            if (in_array($first, ['watch', 'playlist', 'feed', 'channel', 'results', 'c', 'user'], true)) {
+                return null;
             }
 
             return self::validateYouTubeId($explodedPath[0] ?? null);

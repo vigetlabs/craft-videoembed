@@ -447,30 +447,29 @@ final class ParsingHelperTest extends TestCase
     }
 
     /**
-     * Characterizes current behavior — flipped by #50.
-     *
-     * With no ?v= present, the first path segment is trusted as the video ID, so
-     * reserved routes are returned verbatim as bogus IDs. #50 will treat
-     * embed/live like shorts (ID is the second segment) and return null for
-     * non-ID routes such as watch/playlist.
+     * Reserved routes are no longer mistaken for video IDs (issue #50):
+     * embed/live carry the ID in the second segment (like shorts), while
+     * watch/playlist have no bare ID and return null instead of the route name.
      */
-    public function testCharacterizeReservedPathSegmentsReturnedAsIds(): void
+    public function testGetYouTubeIdHandlesReservedPathSegments(): void
     {
         $this->assertEquals(
-            'embed',
+            'dQw4w9WgXcQ',
             ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/embed/dQw4w9WgXcQ')
         );
         $this->assertEquals(
-            'live',
+            'dQw4w9WgXcQ',
             ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/live/dQw4w9WgXcQ')
         );
-        $this->assertEquals(
-            'watch',
+        $this->assertNull(
             ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/watch')
         );
-        $this->assertEquals(
-            'playlist',
+        $this->assertNull(
             ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/playlist?list=PL1')
+        );
+        // /embed with no ID returns null, not the literal "embed".
+        $this->assertNull(
+            ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/embed')
         );
     }
 
