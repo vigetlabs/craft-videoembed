@@ -31,46 +31,72 @@ class ParsingHelper
     public static function getVideoTypeFromUrl(string $url): VideoType
     {
         $parsedUrl = parse_url($url);
+
+        // parse_url() returns false on seriously malformed input.
+        if (!is_array($parsedUrl)) {
+            return VideoType::UNKNOWN;
+        }
+
+        // Only http/https are valid video URLs. Reject javascript:, ftp:, etc.
+        // and protocol-relative URLs (no scheme) before trusting the host.
+        $scheme = strtolower($parsedUrl['scheme'] ?? '');
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            return VideoType::UNKNOWN;
+        }
+
         $host = $parsedUrl['host'] ?? null;
         if (!$host) {
             return VideoType::UNKNOWN;
         }
-        
-        $host = str_replace('www.', '', $host);
-        $host = strtolower($host);
-        
-        if (in_array($host, self::YOUTUBE_URLS)) {
+
+        // Strip a leading www. or a known YouTube subdomain (m., music.) so
+        // mobile and YouTube Music links still resolve (issue #36). Only a
+        // leading prefix is removed — a substring match would let e.g.
+        // "notyoutube.com" through.
+        $host = preg_replace('/^(www|m|music)\./', '', strtolower($host));
+
+        if (in_array($host, self::YOUTUBE_URLS, true)) {
             return VideoType::YOUTUBE;
         }
-        
-        if (in_array($host, self::VIMEO_URLS)) {
+
+        if (in_array($host, self::VIMEO_URLS, true)) {
             return VideoType::VIMEO;
         }
-        
+
         return VideoType::UNKNOWN;
     }
     
     /**
-     * Gets the video id from a YouTube URL
+     * Gets the video id from a YouTube URL.
+     *
+     * Patterns:
+     * - https://www.youtube.com/watch?v=--HXLM8GuxA
+     * - https://www.youtube.com/watch?vi=--HXLM8GuxA
+     * - https://youtu.be/--HXLM8GuxA?si=pNahKJLszKr8J00u
      */
     public static function getYouTubeIdFromUrl(string $url): ?string
     {
         if (empty($url)) {
             return null;
         }
-        
+
         $parts = parse_url($url);
+        if (!is_array($parts)) {
+            return null;
+        }
+
         $query = $parts['query'] ?? null;
         $path = $parts['path'] ?? null;
-        
+
         if ($query) {
             parse_str($query, $qs);
 
-            $v = $qs['v'] ?? null;
-            $vi = $qs['vi'] ?? null;
-            
-            if ($v || $vi) {
-                return $v ?? $vi;
+            // When a v/vi key is present it owns the result. parse_str yields an
+            // array for ?v[]= style params; those are not valid IDs (and would
+            // be a TypeError against the ?string return — issue #34), so reject.
+            if (array_key_exists('v', $qs) || array_key_exists('vi', $qs)) {
+                $id = $qs['v'] ?? $qs['vi'] ?? null;
+                return is_string($id) ? self::validateYouTubeId($id) : null;
             }
         }
 
@@ -86,10 +112,10 @@ class ParsingHelper
             // YouTube Shorts URLs are /shorts/{id} — the ID is the second
             // segment. Return null (not "shorts") when the ID is absent.
             if (strtolower($explodedPath[0] ?? '') === self::YOUTUBE_SHORTS_PREFIX) {
-                return $explodedPath[1] ?? null;
+                return self::validateYouTubeId($explodedPath[1] ?? null);
             }
 
-            return $explodedPath[0] ?? null;
+            return self::validateYouTubeId($explodedPath[0] ?? null);
         }
 
         return null;
@@ -115,6 +141,19 @@ class ParsingHelper
         $segments = explode('/', trim($path, '/'));
 
         return strtolower($segments[0] ?? '') === self::YOUTUBE_SHORTS_PREFIX;
+    }
+
+    /**
+     * Validates a YouTube video ID against YouTube's character set
+     * (A–Z, a–z, 0–9, hyphen, underscore). Returns null for anything else so
+     * untrusted input is never interpolated into embed or image URLs.
+     */
+    private static function validateYouTubeId(?string $id): ?string
+    {
+        if ($id === null || $id === '') {
+            return null;
+        }
+        return preg_match('/^[A-Za-z0-9_-]+$/', $id) ? $id : null;
     }
     
     /**
