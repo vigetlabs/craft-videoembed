@@ -49,11 +49,11 @@ class ParsingHelper
             return VideoType::UNKNOWN;
         }
 
-        // Strip a leading www. or a known YouTube subdomain (m., music.) so
-        // mobile and YouTube Music links still resolve (issue #36). Only a
-        // leading prefix is removed — a substring match would let e.g.
-        // "notyoutube.com" through.
-        $host = preg_replace('/^(www|m|music)\./', '', strtolower($host));
+        // Strip leading www. / m. / music. prefixes, including stacked ones like
+        // www.m.youtube.com (issue #52), so mobile and YouTube Music links still
+        // resolve (issue #36). Only anchored leading prefixes are removed — a
+        // substring match would let e.g. "notyoutube.com" through.
+        $host = preg_replace('/^(?:www\.|m\.|music\.)+/', '', strtolower($host));
 
         if (in_array($host, self::YOUTUBE_URLS, true)) {
             return VideoType::YOUTUBE;

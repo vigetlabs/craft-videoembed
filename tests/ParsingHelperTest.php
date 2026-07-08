@@ -474,17 +474,23 @@ final class ParsingHelperTest extends TestCase
     }
 
     /**
-     * Characterizes current behavior — flipped by #52.
-     *
-     * The host prefix strip removes only one leading label, so a stacked prefix
-     * (www.m.youtube.com) falls through to UNKNOWN. #52 will strip stacked
-     * prefixes while keeping the anchored (non-substring) match.
+     * Stacked leading prefixes (www.m.youtube.com) resolve to YouTube (issue
+     * #52), while the anchored match still rejects look-alike hosts that merely
+     * contain the domain as a substring.
      */
-    public function testCharacterizeStackedHostPrefixRejected(): void
+    public function testGetVideoTypeAcceptsStackedHostPrefixes(): void
     {
         $this->assertEquals(
-            VideoType::UNKNOWN,
+            VideoType::YOUTUBE,
             ParsingHelper::getVideoTypeFromUrl('https://www.m.youtube.com/watch?v=abc')
+        );
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('https://music.youtube.com.evil.com/watch?v=abc')
+        );
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('https://notyoutube.com/watch?v=abc')
         );
     }
 
