@@ -389,4 +389,115 @@ final class ParsingHelperTest extends TestCase
             ParsingHelper::getVideoDataFromUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ')->embedUrl
         );
     }
+
+    // =========================================================================
+    // Coverage baseline: parse_url() guards + defect characterization (#53)
+    //
+    // The characterization tests below assert the CURRENT behavior of known
+    // defects so their fixes land as legible assertion flips. They are not an
+    // endorsement of the behavior — each is tagged with the ticket that changes
+    // it, and that fix's PR will invert the assertion.
+    // =========================================================================
+
+    /**
+     * The !is_array(parse_url(...)) guards added in #42 return the empty result
+     * for input where parse_url() itself fails. "http://" is such an input
+     * (parse_url() returns false), so it exercises both guard branches.
+     */
+    public function testMalformedUrlHitsParseUrlGuards(): void
+    {
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('http://')
+        );
+        $this->assertNull(
+            ParsingHelper::getYouTubeIdFromUrl('http://')
+        );
+    }
+
+    /**
+     * Characterizes current behavior — flipped by #49.
+     *
+     * An array-valued ?h[]= param makes parse_str() yield an array, which
+     * violates the ?string return type and throws a TypeError. #49 will guard the
+     * value and return null instead.
+     */
+    public function testCharacterizeVimeoHashArrayParamThrows(): void
+    {
+        $this->expectException(\TypeError::class);
+        ParsingHelper::getVimeoHashFromUrl('https://player.vimeo.com/video/123?h[]=abc');
+    }
+
+    /**
+     * Characterizes current behavior — flipped by #49.
+     *
+     * The path-form hash is returned without charset validation, so injection
+     * characters flow through untouched into the embed URL. #49 will validate the
+     * hash charset and return null for this input.
+     */
+    public function testCharacterizeVimeoHashSkipsCharsetValidation(): void
+    {
+        $this->assertEquals(
+            'abc"onload',
+            ParsingHelper::getVimeoHashFromUrl('https://vimeo.com/12345/abc"onload')
+        );
+    }
+
+    /**
+     * Characterizes current behavior — flipped by #50.
+     *
+     * With no ?v= present, the first path segment is trusted as the video ID, so
+     * reserved routes are returned verbatim as bogus IDs. #50 will treat
+     * embed/live like shorts (ID is the second segment) and return null for
+     * non-ID routes such as watch/playlist.
+     */
+    public function testCharacterizeReservedPathSegmentsReturnedAsIds(): void
+    {
+        $this->assertEquals(
+            'embed',
+            ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/embed/dQw4w9WgXcQ')
+        );
+        $this->assertEquals(
+            'live',
+            ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/live/dQw4w9WgXcQ')
+        );
+        $this->assertEquals(
+            'watch',
+            ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/watch')
+        );
+        $this->assertEquals(
+            'playlist',
+            ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/playlist?list=PL1')
+        );
+    }
+
+    /**
+     * Characterizes current behavior — flipped by #52.
+     *
+     * The host prefix strip removes only one leading label, so a stacked prefix
+     * (www.m.youtube.com) falls through to UNKNOWN. #52 will strip stacked
+     * prefixes while keeping the anchored (non-substring) match.
+     */
+    public function testCharacterizeStackedHostPrefixRejected(): void
+    {
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('https://www.m.youtube.com/watch?v=abc')
+        );
+    }
+
+    /**
+     * Characterizes current behavior — flipped by #51.
+     *
+     * A scheme-less URL yields no host under parse_url(), so it is rejected. #51
+     * will normalize scheme-less, host-like input by prepending https:// before
+     * parsing (javascript:/ftp: still carry a scheme and stay rejected).
+     */
+    public function testCharacterizeSchemelessUrlRejected(): void
+    {
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('www.youtube.com/watch?v=abc')
+        );
+    }
 }
