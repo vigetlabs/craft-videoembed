@@ -7,6 +7,12 @@ on:
     branches: [v3]
 
 jobs:
+  # Gating run: install the committed composer.lock and run the suite.
+  # `composer install` from a lock is exempt from Composer's advisory
+  # resolver-blocking (that only fires on update/require/remove), so this stays
+  # deterministic and green regardless of advisory churn in Craft's transitive
+  # deps. require-lock-file makes a missing lock a hard error instead of
+  # silently falling back to `composer update` — the regression that broke CI.
   phpunit:
     runs-on: ubuntu-latest
     steps:
@@ -16,4 +22,31 @@ jobs:
           php-version: '8.3'
           coverage: none
       - uses: ramsey/composer-install@4.0.0
+        with:
+          dependency-versions: locked
+          require-lock-file: true
+      - run: composer phpunit
+
+  # Signal run (non-gating): resolve the newest allowed dependencies so we still
+  # exercise the plugin against the latest Craft that real sites run. Advisory
+  # blocking only fires while resolving, so we turn it off for THIS leg and
+  # surface advisories via `composer audit` (report, don't block). The gating
+  # job never re-resolves, so its security posture is unchanged. Kept
+  # non-blocking so upstream advisory timing can't gate normal PRs.
+  phpunit-latest:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Allow advisory-affected transitive deps to resolve (report, don't block)
+        run: composer config -g policy.advisories.block false || composer config -g audit.block-insecure false || true
+      - uses: ramsey/composer-install@4.0.0
+        with:
+          dependency-versions: highest
+      - name: Report known advisories (non-fatal)
+        run: composer audit || true
       - run: composer phpunit
