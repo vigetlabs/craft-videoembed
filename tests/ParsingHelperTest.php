@@ -416,30 +416,33 @@ final class ParsingHelperTest extends TestCase
     }
 
     /**
-     * Characterizes current behavior — flipped by #49.
-     *
-     * An array-valued ?h[]= param makes parse_str() yield an array, which
-     * violates the ?string return type and throws a TypeError. #49 will guard the
-     * value and return null instead.
+     * An array-valued ?h[]= param must not throw a TypeError; it is rejected and
+     * returns null (issue #49, mirroring the YouTube ?v[]= fix from #34).
      */
-    public function testCharacterizeVimeoHashArrayParamThrows(): void
+    public function testGetVimeoHashRejectsArrayQueryParam(): void
     {
-        $this->expectException(\TypeError::class);
-        ParsingHelper::getVimeoHashFromUrl('https://player.vimeo.com/video/123?h[]=abc');
+        $this->assertNull(
+            ParsingHelper::getVimeoHashFromUrl('https://player.vimeo.com/video/123?h[]=abc')
+        );
     }
 
     /**
-     * Characterizes current behavior — flipped by #49.
-     *
-     * The path-form hash is returned without charset validation, so injection
-     * characters flow through untouched into the embed URL. #49 will validate the
-     * hash charset and return null for this input.
+     * Hash values outside [A-Za-z0-9] are rejected so untrusted characters never
+     * reach the embed/canonical URL (issue #49); valid hashes still resolve, in
+     * both the path (vimeo.com/{id}/{hash}) and query (?h=) forms.
      */
-    public function testCharacterizeVimeoHashSkipsCharsetValidation(): void
+    public function testGetVimeoHashValidatesCharset(): void
     {
-        $this->assertEquals(
-            'abc"onload',
+        $this->assertNull(
             ParsingHelper::getVimeoHashFromUrl('https://vimeo.com/12345/abc"onload')
+        );
+        $this->assertEquals(
+            'a1b2c3d4e5',
+            ParsingHelper::getVimeoHashFromUrl('https://vimeo.com/12345/a1b2c3d4e5')
+        );
+        $this->assertEquals(
+            'a1b2c3d4e5',
+            ParsingHelper::getVimeoHashFromUrl('https://player.vimeo.com/video/12345?h=a1b2c3d4e5')
         );
     }
 

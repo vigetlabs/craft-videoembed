@@ -231,11 +231,15 @@ class ParsingHelper
     {
         $parts = parse_url($url);
 
-        // player.vimeo.com uses ?h= query param
+        // player.vimeo.com uses ?h= query param. parse_str() yields an array for
+        // ?h[]= style params; reject non-strings before the ?string return
+        // (issue #49) and validate the charset so untrusted input never reaches
+        // the embed URL.
         if (isset($parts['query'])) {
             parse_str($parts['query'], $qs);
-            if (!empty($qs['h'])) {
-                return $qs['h'];
+            $h = $qs['h'] ?? null;
+            if (is_string($h) && $h !== '') {
+                return self::validateVimeoHash($h);
             }
         }
 
@@ -254,7 +258,20 @@ class ParsingHelper
             return null;
         }
 
-        return $segments[1] ?? null;
+        return self::validateVimeoHash($segments[1] ?? null);
+    }
+
+    /**
+     * Validates a Vimeo private hash against Vimeo's character set (A–Z, a–z,
+     * 0–9). Returns null for anything else so untrusted input is never
+     * interpolated into the embed or canonical URL — mirrors validateYouTubeId().
+     */
+    private static function validateVimeoHash(?string $hash): ?string
+    {
+        if ($hash === null || $hash === '') {
+            return null;
+        }
+        return preg_match('/^[A-Za-z0-9]+$/', $hash) ? $hash : null;
     }
 
 }
