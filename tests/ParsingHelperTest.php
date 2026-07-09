@@ -495,17 +495,53 @@ final class ParsingHelperTest extends TestCase
     }
 
     /**
-     * Characterizes current behavior — flipped by #51.
-     *
-     * A scheme-less URL yields no host under parse_url(), so it is rejected. #51
-     * will normalize scheme-less, host-like input by prepending https:// before
-     * parsing (javascript:/ftp: still carry a scheme and stay rejected).
+     * Scheme-less, host-like pastes are normalized (https:// assumed) and
+     * resolve end-to-end (issue #51), while protocol-relative and non-http
+     * schemes stay rejected.
      */
-    public function testCharacterizeSchemelessUrlRejected(): void
+    public function testGetVideoTypeNormalizesSchemelessUrls(): void
     {
         $this->assertEquals(
-            VideoType::UNKNOWN,
+            VideoType::YOUTUBE,
             ParsingHelper::getVideoTypeFromUrl('www.youtube.com/watch?v=abc')
         );
+        $this->assertEquals(
+            VideoType::YOUTUBE,
+            ParsingHelper::getVideoTypeFromUrl('youtu.be/dQw4w9WgXcQ')
+        );
+        $this->assertEquals(
+            VideoType::VIMEO,
+            ParsingHelper::getVideoTypeFromUrl('vimeo.com/12345')
+        );
+
+        // Protocol-relative and non-http schemes are still rejected.
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('//youtube.com/watch?v=abc')
+        );
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('javascript://youtube.com/watch?v=abc')
+        );
+    }
+
+    /**
+     * Scheme-less input resolves to usable data end-to-end, not just a type —
+     * getVideoData() extracts the ID and builds the embed URL (issue #51).
+     */
+    public function testGetVideoDataResolvesSchemelessUrls(): void
+    {
+        $youtube = ParsingHelper::getVideoDataFromUrl('www.youtube.com/watch?v=dQw4w9WgXcQ');
+        $this->assertNotNull($youtube);
+        $this->assertEquals('dQw4w9WgXcQ', $youtube->id);
+        $this->assertEquals('https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0', $youtube->embedUrl);
+
+        $short = ParsingHelper::getVideoDataFromUrl('youtu.be/dQw4w9WgXcQ');
+        $this->assertNotNull($short);
+        $this->assertEquals('dQw4w9WgXcQ', $short->id);
+
+        $vimeo = ParsingHelper::getVideoDataFromUrl('vimeo.com/9999999999');
+        $this->assertNotNull($vimeo);
+        $this->assertEquals('9999999999', $vimeo->id);
     }
 }
