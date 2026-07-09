@@ -30,7 +30,7 @@ class ParsingHelper
     
     public static function getVideoTypeFromUrl(string $url): VideoType
     {
-        $parsedUrl = parse_url($url);
+        $parsedUrl = parse_url(self::normalizeUrl($url));
 
         // parse_url() returns false on seriously malformed input.
         if (!is_array($parsedUrl)) {
@@ -80,7 +80,7 @@ class ParsingHelper
             return null;
         }
 
-        $parts = parse_url($url);
+        $parts = parse_url(self::normalizeUrl($url));
         if (!is_array($parts)) {
             return null;
         }
@@ -139,7 +139,7 @@ class ParsingHelper
      */
     private static function isYouTubeShortsUrl(string $url): bool
     {
-        $path = parse_url($url, PHP_URL_PATH);
+        $path = parse_url(self::normalizeUrl($url), PHP_URL_PATH);
 
         if (!$path) {
             return false;
@@ -148,6 +148,28 @@ class ParsingHelper
         $segments = explode('/', trim($path, '/'));
 
         return strtolower($segments[0] ?? '') === self::YOUTUBE_SHORTS_PREFIX;
+    }
+
+    /**
+     * Prepends https:// to scheme-less, host-like input (e.g.
+     * "www.youtube.com/watch?v=x") so editor pastes without a scheme resolve
+     * consistently across every parse method (issue #51). Protocol-relative
+     * URLs (//host) and anything carrying an explicit scheme (javascript:, ftp:)
+     * are left untouched, so getVideoTypeFromUrl()'s http(s)-only guard still
+     * rejects them.
+     */
+    private static function normalizeUrl(string $url): string
+    {
+        $parsed = parse_url($url);
+        if (
+            is_array($parsed)
+            && !isset($parsed['scheme'])
+            && !isset($parsed['host'])
+            && !str_starts_with($url, '//')
+        ) {
+            return 'https://' . $url;
+        }
+        return $url;
     }
 
     /**
@@ -180,7 +202,7 @@ class ParsingHelper
      */
     public static function getVimeoIdFromUrl(string $url): ?string
     {
-        $parts = parse_url($url);
+        $parts = parse_url(self::normalizeUrl($url));
         $path = $parts['path'] ?? null;
 
         if (!$path) {
@@ -236,7 +258,7 @@ class ParsingHelper
      */
     public static function getVimeoHashFromUrl(string $url): ?string
     {
-        $parts = parse_url($url);
+        $parts = parse_url(self::normalizeUrl($url));
 
         // player.vimeo.com uses ?h= query param. parse_str() yields an array for
         // ?h[]= style params; reject non-strings before the ?string return
