@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+### Added
+- Scheme-less, host-like URLs (e.g. `www.youtube.com/watch?v=…`, `youtu.be/…`, `vimeo.com/…`) are now recognized by `isVideoUrl()`, `getEmbedUrl()`, and `getVideoData()` [#51](https://github.com/vigetlabs/craft-videoembed/issues/51) [#59](https://github.com/vigetlabs/craft-videoembed/pull/59)
+
+### Changed
+- `getEmbedUrl()` now returns an absolute `https://` URL instead of a protocol-relative `//…` URL [#42](https://github.com/vigetlabs/craft-videoembed/pull/42)
+- `getEmbedUrl()` is no longer deprecated — it is a supported thin wrapper over `getVideoData()->embedUrl` [#42](https://github.com/vigetlabs/craft-videoembed/pull/42)
+- `isVideoUrl()` now returns `true` only when an embeddable video can be produced, so it agrees with `getVideoData()`; a host-valid URL with no extractable ID (e.g. `https://youtube.com/`) now returns `false` [#54](https://github.com/vigetlabs/craft-videoembed/issues/54) [#59](https://github.com/vigetlabs/craft-videoembed/pull/59)
+- URL matching is now strict: hosts must match exactly (a look-alike such as `notyoutube.com` is rejected) and only `http`/`https` URLs are accepted (protocol-relative and `javascript:`/`ftp:` URLs are rejected) [#42](https://github.com/vigetlabs/craft-videoembed/pull/42)
+
+### Removed
+- `getEmbedUrl()` no longer appends the legacy Vimeo Froogaloop query params (`?player_id=video&api=1`) to Vimeo embed URLs. **Upgrade note:** integrations that drove the Vimeo player through those params should migrate to the [Vimeo Player SDK](https://developer.vimeo.com/player/sdk) [#39](https://github.com/vigetlabs/craft-videoembed/issues/39) [#42](https://github.com/vigetlabs/craft-videoembed/pull/42)
+
+### Fixed
+- YouTube `/embed/{id}` and `/live/{id}` URLs now resolve the correct video ID, and non-video routes (`/watch`, `/playlist`, …) no longer return a bogus ID [#50](https://github.com/vigetlabs/craft-videoembed/issues/50) [#58](https://github.com/vigetlabs/craft-videoembed/pull/58)
+- Stacked host prefixes such as `www.m.youtube.com` are now recognized as YouTube [#52](https://github.com/vigetlabs/craft-videoembed/issues/52) [#58](https://github.com/vigetlabs/craft-videoembed/pull/58)
+- Mobile (`m.`) and YouTube Music (`music.`) subdomains resolve to YouTube [#36](https://github.com/vigetlabs/craft-videoembed/issues/36) [#42](https://github.com/vigetlabs/craft-videoembed/pull/42)
+- `getYouTubeIdFromUrl()` no longer throws a `TypeError` on array-valued `?v[]=` query params [#34](https://github.com/vigetlabs/craft-videoembed/issues/34) [#42](https://github.com/vigetlabs/craft-videoembed/pull/42)
+
+### Security
+- Vimeo private-hash parsing rejects array-valued `?h[]=` params (previously an uncaught `TypeError`) and validates the hash against `[A-Za-z0-9]`, so untrusted characters can't be interpolated into the embed or canonical URL [#49](https://github.com/vigetlabs/craft-videoembed/issues/49) [#58](https://github.com/vigetlabs/craft-videoembed/pull/58)
+- YouTube video IDs are validated against `[A-Za-z0-9_-]` before being interpolated into embed and image URLs [#42](https://github.com/vigetlabs/craft-videoembed/pull/42)
+
 ## 3.1.0 - 2026-06-16
 ### Added
 - Exposed `isVertical` for YouTube Shorts [#40](https://github.com/vigetlabs/craft-videoembed/pull/40)
