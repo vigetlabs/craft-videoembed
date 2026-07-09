@@ -3,7 +3,6 @@
 namespace viget\videoembed\services;
 
 use craft\base\Component;
-use viget\videoembed\enums\VideoType;
 use viget\videoembed\helpers\ParsingHelper;
 use viget\videoembed\models\VideoData;
 
@@ -29,10 +28,14 @@ class VideoEmbed extends Component
     }
 
     /**
-     * Determine whether the url is a YouTube or Vimeo url
+     * Determines whether the URL is an embeddable YouTube or Vimeo video.
+     *
+     * Returns true only when getVideoData() can produce usable data, so a true
+     * result guarantees a non-null getVideoData()/getEmbedUrl() — a host-valid
+     * URL with no extractable ID (e.g. https://youtube.com/) is not a video URL.
      */
     public function isVideoUrl(string $url): bool
     {
-        return ParsingHelper::getVideoTypeFromUrl($url) !== VideoType::UNKNOWN;
+        return ParsingHelper::getVideoDataFromUrl($url) !== null;
     }
 }

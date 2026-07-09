@@ -78,22 +78,20 @@ final class VideoEmbedTest extends TestCase
     }
 
     /**
-     * Characterizes current behavior — flipped by #54.
-     *
-     * isVideoUrl() validates only the host, while getVideoData() also requires an
-     * extractable ID, so the two disagree for a provider URL that carries no video
-     * ID. This pins the mismatch (a null-deref risk for guard-then-use callers)
-     * that #54 will resolve.
+     * isVideoUrl() now agrees with getVideoData(): it returns true only when an
+     * embeddable video can be produced, so a host-valid URL with no extractable
+     * ID is not a video URL (issue #54) — closing the null-deref surface for
+     * guard-then-use callers.
      */
-    public function testCharacterizeIsVideoUrlAndGetVideoDataDisagree(): void
+    public function testIsVideoUrlAgreesWithGetVideoData(): void
     {
-        $this->assertTrue(
-            $this->service->isVideoUrl('https://youtube.com/'),
-            'Characterizes #54: host-only isVideoUrl() currently returns true'
-        );
-        $this->assertNull(
-            $this->service->getVideoData('https://youtube.com/'),
-            'Characterizes #54: getVideoData() returns null (no extractable ID)'
-        );
+        // Host-valid but no extractable ID: both agree it is not a video.
+        $this->assertFalse($this->service->isVideoUrl('https://youtube.com/'));
+        $this->assertNull($this->service->getVideoData('https://youtube.com/'));
+
+        // Full URLs still resolve to true, matching a non-null getVideoData().
+        $this->assertTrue($this->service->isVideoUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ'));
+        $this->assertNotNull($this->service->getVideoData('https://www.youtube.com/watch?v=dQw4w9WgXcQ'));
+        $this->assertTrue($this->service->isVideoUrl('https://vimeo.com/9999999999'));
     }
 }
