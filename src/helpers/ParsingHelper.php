@@ -49,11 +49,11 @@ class ParsingHelper
             return VideoType::UNKNOWN;
         }
 
-        // Strip a leading www. or a known YouTube subdomain (m., music.) so
-        // mobile and YouTube Music links still resolve (issue #36). Only a
-        // leading prefix is removed — a substring match would let e.g.
-        // "notyoutube.com" through.
-        $host = preg_replace('/^(www|m|music)\./', '', strtolower($host));
+        // Strip leading www. / m. / music. prefixes, including stacked ones like
+        // www.m.youtube.com (issue #52), so mobile and YouTube Music links still
+        // resolve (issue #36). Only anchored leading prefixes are removed — a
+        // substring match would let e.g. "notyoutube.com" through.
+        $host = preg_replace('/^(?:www\.|m\.|music\.)+/', '', strtolower($host));
 
         if (in_array($host, self::YOUTUBE_URLS, true)) {
             return VideoType::YOUTUBE;
@@ -108,11 +108,18 @@ class ParsingHelper
          */
         if ($path) {
             $explodedPath = explode('/', trim($path, '/'));
+            $first = strtolower($explodedPath[0] ?? '');
 
-            // YouTube Shorts URLs are /shorts/{id} — the ID is the second
-            // segment. Return null (not "shorts") when the ID is absent.
-            if (strtolower($explodedPath[0] ?? '') === self::YOUTUBE_SHORTS_PREFIX) {
+            // /shorts/{id}, /embed/{id}, /live/{id} carry the ID in the SECOND
+            // segment. Return null (not the route name) when the ID is absent.
+            if (in_array($first, [self::YOUTUBE_SHORTS_PREFIX, 'embed', 'live'], true)) {
                 return self::validateYouTubeId($explodedPath[1] ?? null);
+            }
+
+            // Known non-ID routes never carry a bare video ID as the first
+            // segment (issue #50) — don't treat "watch", "playlist", etc. as IDs.
+            if (in_array($first, ['watch', 'playlist', 'feed', 'channel', 'results', 'c', 'user'], true)) {
+                return null;
             }
 
             return self::validateYouTubeId($explodedPath[0] ?? null);
@@ -231,11 +238,15 @@ class ParsingHelper
     {
         $parts = parse_url($url);
 
-        // player.vimeo.com uses ?h= query param
+        // player.vimeo.com uses ?h= query param. parse_str() yields an array for
+        // ?h[]= style params; reject non-strings before the ?string return
+        // (issue #49) and validate the charset so untrusted input never reaches
+        // the embed URL.
         if (isset($parts['query'])) {
             parse_str($parts['query'], $qs);
-            if (!empty($qs['h'])) {
-                return $qs['h'];
+            $h = $qs['h'] ?? null;
+            if (is_string($h) && $h !== '') {
+                return self::validateVimeoHash($h);
             }
         }
 
@@ -254,7 +265,20 @@ class ParsingHelper
             return null;
         }
 
-        return $segments[1] ?? null;
+        return self::validateVimeoHash($segments[1] ?? null);
+    }
+
+    /**
+     * Validates a Vimeo private hash against Vimeo's character set (A–Z, a–z,
+     * 0–9). Returns null for anything else so untrusted input is never
+     * interpolated into the embed or canonical URL — mirrors validateYouTubeId().
+     */
+    private static function validateVimeoHash(?string $hash): ?string
+    {
+        if ($hash === null || $hash === '') {
+            return null;
+        }
+        return preg_match('/^[A-Za-z0-9]+$/', $hash) ? $hash : null;
     }
 
 }

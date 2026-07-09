@@ -416,73 +416,81 @@ final class ParsingHelperTest extends TestCase
     }
 
     /**
-     * Characterizes current behavior — flipped by #49.
-     *
-     * An array-valued ?h[]= param makes parse_str() yield an array, which
-     * violates the ?string return type and throws a TypeError. #49 will guard the
-     * value and return null instead.
+     * An array-valued ?h[]= param must not throw a TypeError; it is rejected and
+     * returns null (issue #49, mirroring the YouTube ?v[]= fix from #34).
      */
-    public function testCharacterizeVimeoHashArrayParamThrows(): void
+    public function testGetVimeoHashRejectsArrayQueryParam(): void
     {
-        $this->expectException(\TypeError::class);
-        ParsingHelper::getVimeoHashFromUrl('https://player.vimeo.com/video/123?h[]=abc');
-    }
-
-    /**
-     * Characterizes current behavior — flipped by #49.
-     *
-     * The path-form hash is returned without charset validation, so injection
-     * characters flow through untouched into the embed URL. #49 will validate the
-     * hash charset and return null for this input.
-     */
-    public function testCharacterizeVimeoHashSkipsCharsetValidation(): void
-    {
-        $this->assertEquals(
-            'abc"onload',
-            ParsingHelper::getVimeoHashFromUrl('https://vimeo.com/12345/abc"onload')
+        $this->assertNull(
+            ParsingHelper::getVimeoHashFromUrl('https://player.vimeo.com/video/123?h[]=abc')
         );
     }
 
     /**
-     * Characterizes current behavior — flipped by #50.
-     *
-     * With no ?v= present, the first path segment is trusted as the video ID, so
-     * reserved routes are returned verbatim as bogus IDs. #50 will treat
-     * embed/live like shorts (ID is the second segment) and return null for
-     * non-ID routes such as watch/playlist.
+     * Hash values outside [A-Za-z0-9] are rejected so untrusted characters never
+     * reach the embed/canonical URL (issue #49); valid hashes still resolve, in
+     * both the path (vimeo.com/{id}/{hash}) and query (?h=) forms.
      */
-    public function testCharacterizeReservedPathSegmentsReturnedAsIds(): void
+    public function testGetVimeoHashValidatesCharset(): void
+    {
+        $this->assertNull(
+            ParsingHelper::getVimeoHashFromUrl('https://vimeo.com/12345/abc"onload')
+        );
+        $this->assertEquals(
+            'a1b2c3d4e5',
+            ParsingHelper::getVimeoHashFromUrl('https://vimeo.com/12345/a1b2c3d4e5')
+        );
+        $this->assertEquals(
+            'a1b2c3d4e5',
+            ParsingHelper::getVimeoHashFromUrl('https://player.vimeo.com/video/12345?h=a1b2c3d4e5')
+        );
+    }
+
+    /**
+     * Reserved routes are no longer mistaken for video IDs (issue #50):
+     * embed/live carry the ID in the second segment (like shorts), while
+     * watch/playlist have no bare ID and return null instead of the route name.
+     */
+    public function testGetYouTubeIdHandlesReservedPathSegments(): void
     {
         $this->assertEquals(
-            'embed',
+            'dQw4w9WgXcQ',
             ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/embed/dQw4w9WgXcQ')
         );
         $this->assertEquals(
-            'live',
+            'dQw4w9WgXcQ',
             ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/live/dQw4w9WgXcQ')
         );
-        $this->assertEquals(
-            'watch',
+        $this->assertNull(
             ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/watch')
         );
-        $this->assertEquals(
-            'playlist',
+        $this->assertNull(
             ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/playlist?list=PL1')
+        );
+        // /embed with no ID returns null, not the literal "embed".
+        $this->assertNull(
+            ParsingHelper::getYouTubeIdFromUrl('https://www.youtube.com/embed')
         );
     }
 
     /**
-     * Characterizes current behavior — flipped by #52.
-     *
-     * The host prefix strip removes only one leading label, so a stacked prefix
-     * (www.m.youtube.com) falls through to UNKNOWN. #52 will strip stacked
-     * prefixes while keeping the anchored (non-substring) match.
+     * Stacked leading prefixes (www.m.youtube.com) resolve to YouTube (issue
+     * #52), while the anchored match still rejects look-alike hosts that merely
+     * contain the domain as a substring.
      */
-    public function testCharacterizeStackedHostPrefixRejected(): void
+    public function testGetVideoTypeAcceptsStackedHostPrefixes(): void
     {
         $this->assertEquals(
-            VideoType::UNKNOWN,
+            VideoType::YOUTUBE,
             ParsingHelper::getVideoTypeFromUrl('https://www.m.youtube.com/watch?v=abc')
+        );
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('https://music.youtube.com.evil.com/watch?v=abc')
+        );
+        $this->assertEquals(
+            VideoType::UNKNOWN,
+            ParsingHelper::getVideoTypeFromUrl('https://notyoutube.com/watch?v=abc')
         );
     }
 
