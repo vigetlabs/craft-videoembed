@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+## 3.2.0 - 2026-07-09
 ### Added
 - Scheme-less, host-like URLs (e.g. `www.youtube.com/watch?v=…`, `youtu.be/…`, `vimeo.com/…`) are now recognized by `isVideoUrl()`, `getEmbedUrl()`, and `getVideoData()` [#51](https://github.com/vigetlabs/craft-videoembed/issues/51) [#59](https://github.com/vigetlabs/craft-videoembed/pull/59)
 
